@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"   content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Game2048</title>
+    <script src="flex.js"></script>
+    <script src="touch.js"></script>
+    <style>
+        *{
+            margin: 0;padding: 0;
+        }
+        #gamecontainer{
+            background: bisque;position: fixed;
+            top: 0;left: 0;right: 0;bottom: 0;
+        }
+        #btn{
+            text-align: center;position: fixed;bottom: 0;left: 0;right: 0;
+            height: 3rem;line-height: 3rem;font-size: 1rem;
+            background: cadetblue;color: white;
+        }
+        #gamecanvas{
+            width: 20rem;height: 20rem;
+            float: left;margin-top: 4rem;
+            background: white;display: flex;
+            flex-direction: column;justify-content: space-between;
+        }
+        .row{
+            display: flex;flex: 1;background: cadetblue;
+            flex-direction: row;justify-content: space-between;
+        }
+        .col{
+            display: flex;flex: 1;background: darksalmon;border: 1px solid #fff;flex-direction: row;justify-content: center;
+        }
+        .num{
+            color: #fff;font-size: 3rem;
+            display: flex;flex: 1;flex-direction: column;justify-content: space-around;align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="gamecontainer">
+        <div id="gamecanvas">
+            
+        </div>
+        <div id="btn" onclick="getRandomNum()">开始</div>
+    </div>
+    <script>
+        const NUM_ = 4;
+        window.onload=function (ev) {
+            sliderbackListener(document.getElementById('gamecontainer'),touchcallback); // 初始化滑动方向监听
+            initCanvas();
+            createRandomNumElement();
+        }
+        function touchcallback(direction) {
+            console.log(direction);
+            moveElements();
+            createRandomNumElement();
+        }
+        function moveElements() { // 移动元素
+            
+        }
+        function getRandomNum() { // 获取一个随机数
+            var num = Math.random()*(NUM_-1)+1;
+            return num.toFixed()-1;
+        }
+        function getRandomNumXY() {
+            var x = getRandomNum();
+            var y = getRandomNum();
+            return{x:x,y:y}
+        }
+        function initCanvas() { // 初始化画布  生成所有的格子以及一个数字
+            var canvas_ = document.getElementById('gamecanvas');
+            for(var i=0;i<NUM_;i++){
+                var rowChild = document.createElement('div');
+                rowChild.className = 'row';
+                for(var j=0;j<NUM_;j++){
+                    var colChild = document.createElement('div');
+                    colChild.className = 'col';
+                    rowChild.appendChild(colChild)
+                }
+                canvas_.appendChild(rowChild)
+            }
+        }
+        function createRandomNumElement() { // 生成随机元素
+            var canvas_ = document.getElementById('gamecanvas');
+            var coordinateX = getRandomNum();
+            var coordinateY = getRandomNum();
+            var numChild = document.createElement('div');
+            numChild.innerHTML = '2';
+            numChild.className = 'num'
+            var hasChild = canvas_.children[coordinateX].children[coordinateY].innerHTML;
+            if(AllElementsFull()){
+                console.log('you lose');
+                return
+            }
+            if(hasChild!=''){
+                createRandomNumElement();
+            }else{
+                canvas_.children[coordinateX].children[coordinateY].appendChild(numChild);
+            }
+        }
+        function AllElementsFull() { // 查询是否所有的元素都有内容
+            var canvas_ = document.getElementById('gamecanvas');
+            var state = true;
+            var rowChildren = canvas_.children;
+            for(var i=0;i<rowChildren.length;i++){
+                var colChildren = rowChildren[i].children;
+                for(var j=0;j<colChildren.length;j++){
+                    if(colChildren[j].innerHTML==''){ // 但凡有一个元素是空的
+                        state = false
+                    }
+                }
+            }
+            return state;
+        }
+    </script>
+</body>
+</html>
