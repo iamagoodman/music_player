@@ -43,7 +43,8 @@
         <div id="gamecanvas">
             
         </div>
-        <div id="btn" onclick="getRandomNum()">开始</div>
+        <input type="text" id="num_val" style="height: 1rem;width: 5rem">
+        <div id="btn" onclick="movearray()">开始</div>
     </div>
     <script>
         const NUM_ = 4;
@@ -52,13 +53,170 @@
             initCanvas();
             createRandomNumElement();
         }
+        function movearray() {
+            // var num = 0;
+            // for(var i=0;i<arr.length-1;i++){
+            //     if(arr[i]==0&&arr[i+1]!=0){
+            //         arr[num] = arr[i+1];
+            //         num++
+            //         arr[i+1]=0;
+            //     }
+            // }
+            var value = document.getElementById('num_val').value;
+            var arr = value.split('');
+            var target = arr.length-1;
+            for(var j=arr.length-1;j>0;j--){
+                if(target!=j&&arr[target]==arr[j]){
+                    arr[target]=2*arr[j];
+                    arr[j]=0;
+                    target = j-1;
+                }
+                if(arr[j]!=0){
+                    target=j
+                }
+            }
+            console.log(arr);
+        }
+        function fullarr(arr,num) {
+            var isfull = true;
+            for(var i=0;i<num;i++){
+                if(arr[i]==0){
+                    isfull=false;
+                }
+            }
+            return isfull
+        }
         function touchcallback(direction) {
             console.log(direction);
-            moveElements();
+            switch(direction){
+                case 0:console.log('没有移动');
+                    break;
+                case 1:moveElements(1);
+                    break;
+                case 2:moveElements(2);
+                    break;
+                case 3:moveElements(3);
+                    break;
+                case 4:moveElements(4);
+                    break;
+            }
+            // moveElements();
+            // createRandomNumElement();
+        }
+        function moveElements(direction){ // 移动元素
+            var canvas_ = document.getElementById('gamecanvas');
+            var Elements = [];
+            var rowChildren = canvas_.children;
+            for(var i=0;i<rowChildren.length;i++){
+                var colChildren = rowChildren[i].children;
+                for(var j=0;j<colChildren.length;j++){
+                    if(colChildren[j].innerHTML!=''){
+                        var num = colChildren[j].children[0].innerHTML
+                        Elements.push({row:i,col:j,num:Number(num)});
+                    }else{
+                        Elements.push({row:i,col:j,num:0});
+                    }
+                }
+            }
+            console.log(Elements);
+            var resultList =[];
+            if(direction==1||direction==2){ // 向上 按列找
+                for(var i=0;i<NUM_;i++){
+                    var colList = Elements.filter(function(item){return item.col==i});
+                    var changeList = changedataList(colList,direction);
+                    changeList.forEach(function (item) {
+                        resultList.push(item)
+                    });
+                }
+            }
+            if(direction==3||direction==4){ // 向下 按列查找
+                for(var i=0;i<NUM_;i++){
+                    var colList = Elements.filter(function(item){return item.row==i});
+                    var changeList = changedataList(colList,direction);
+                    changeList.forEach(function (item) {
+                        resultList.push(item)
+                    });
+                }
+            }
+            console.log(resultList);
+            clearTotalElements();
+            createTotalElements(resultList);
+        }
+        function clearTotalElements() {
+            var ElementList = document.getElementsByClassName('col');
+            for(var i=0;i<ElementList.length;i++){
+                ElementList[i].innerHTML = '';
+            }
+        }
+        function createTotalElements(resultList) {
+            var canvas_ = document.getElementById('gamecanvas');
+            var rowChildren = canvas_.children;
+            resultList.forEach(function (item) {
+                if(item.num!=0){
+                    rowChildren[item.row].children[item.col].innerHTML=`<div class="num">${item.num}</div>`
+                }
+            })
             createRandomNumElement();
         }
-        function moveElements() { // 移动元素
-            
+        function changedataList(list,direction) {  // 遍历数组 1、从后往前移动实际数字 2、从
+            if(direction%2==0){
+                var num = list.length-1;
+                for(var j=list.length-1;j>0;j--){
+                    if(list[j].num==0&&list[j-1]!=0){
+                        list[j].num = list[j-1].num;
+                        list[j-1].num = 0;
+                        num--;
+                    }
+                    // var currentj = list[j];
+                    // for(var k=j-1;k>-1;k--){
+                    //     var currentk = list[k];
+                    //     if(currentj.num==0&&currentk.num!=0){
+                    //         currentj.num = currentk.num;
+                    //         currentk.num = 0;
+                    //     }
+                    //     if(currentj.num==currentk.num&&currentj.num!=0&&k==j-1){
+                    //         currentk.num = 0;
+                    //         currentj.num = currentj.num*2;
+                    //         j=list.length-1;
+                    //         break;
+                    //     }
+                    // }
+                }
+                var target = list.length-1;
+                for(var j=list.length-1;j>0;j--){
+                    if(list[j]!=0){
+                        target=j
+                    }
+                    if(list[target]==list[j]){
+                        list[target]=2*list[j];
+                        list[j]=0;
+                        target = j-1;
+                    }
+                }
+            }else{
+                for(var j=0;j<list.length-1;j++){
+                    var currentj = list[j];
+                    for(var k=j+1;k<list.length;k++){
+                        var currentk = list[k];
+                        if(currentj.num==0&&currentk.num!=0){
+                            currentj.num = currentk.num;
+                            currentk.num = 0;
+                        }
+                        if(currentj.num==currentk.num&&currentj.num!=0&&k==j+1){
+                            currentk.num = 0;
+                            currentj.num = currentj.num*2;
+                            j=0;
+                            break;
+                        }
+                        // if(currentj.num!=0&&currentk.num==0){
+                        //     break;
+                        // }
+                    }
+                }
+            }
+            // console.log('**list**');
+            // console.log(list);
+            return list;
         }
         function getRandomNum() { // 获取一个随机数
             var num = Math.random()*(NUM_-1)+1;
