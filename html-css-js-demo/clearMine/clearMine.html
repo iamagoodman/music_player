@@ -37,6 +37,10 @@
             background-image: url('./img/mine.jpg');
             background-size: cover;
         }
+        #mineContainer div.flag{
+            background-image: url('./img/flag.jpg');
+            background-size: cover;
+        }
         .mineMask{
             flex: 1;
             background: darksalmon;
@@ -134,6 +138,7 @@
         renderView();
     }
     function renderView() {
+        clearView();
         for(var i=0;i<totalData.length;i++){
             $('#mineContainer').append('<div class="row"></div>');
             for(var j=0;j<totalData[i].length;j++){
@@ -158,6 +163,9 @@
                 $('#mineContainer').children()[i].append(div_);
             }
         }
+    }
+    function clearView() {
+        $('#mineContainer').empty();
     }
     function checkMineAndSetNum() {
         for(var i=0;i<totalData.length;i++){
@@ -207,14 +215,16 @@
     }
     $('#mineContainer').delegate('.col','click',function () { // 点击每一个雷的方法
         var num = this.innerText;
+        var Children = $(this).children('.mask');
         var row_ = this.getAttribute('data-row');
         var col_ = this.getAttribute('data-col');
         console.log(num,row_,col_);
         if(actionType == 1){ // 翻开
-
+            totalData[row_][col_].state = 'open';
         }else{ // 插旗
-
+            totalData[row_][col_].flag = !totalData[row_][col_].flag;
         }
+        renderView();
     })
 </script>
 </html>
