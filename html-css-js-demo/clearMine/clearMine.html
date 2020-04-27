@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>扫雷</title>
+    <meta name="viewport"   content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script src="../common/flex.js"></script>
+    <script src="../common/touch.js"></script>
+    <script src="../common/jquery.js"></script>
+    <style>
+        #mineContainer{
+            width: 100%;
+            height: 20rem;
+            background: bisque;
+            flex-direction: column;
+            display: flex;
+            justify-content: space-between;
+        }
+        .row{
+            flex: 1;
+            background: cadetblue;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        .col{
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            color: darksalmon;
+            background: darksalmon;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        #mineContainer div.mine{
+            background-image: url('./img/mine.jpg');
+            background-size: cover;
+        }
+        .mineMask{
+            flex: 1;
+            background: darksalmon;
+        }
+        .open{
+            color: white;
+        }
+        #btnContainer{
+            width: 80%;
+            margin: 10%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        #btnContainer div{
+            flex: 1;
+        }
+        #btnContainer .btn{
+            text-align: center;
+            font-size: 1rem;
+            color: darkgrey;
+            background: aliceblue;
+        }
+        #btnContainer .active{
+            background: cadetblue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="mineContainer">
+    </div>
+    <div id="btnContainer">
+        <div class="btn" id="turnOver" onclick="turnOver()">翻开</div>
+        <div></div>
+        <div class="btn" id="flagInsert" onclick="flagInsert()">插旗</div>
+    </div>
+</body>
+<script>
+    var pattern = {
+        difficulty:{
+            row:16,
+            col:16,
+            mineNum:50,
+            desc:'困难'
+        },
+        normal:{
+            row:12,
+            col:12,
+            mineNum:20,
+            desc:'平常'
+        },
+        easy:{
+            row:9,
+            col:9,
+            mineNum:10,
+            desc:'简单'
+        }
+    }
+    var checkList = [
+        {x:-1,y:-1},
+        {x:-1,y:0},
+        {x:-1,y:1},
+        {x:0,y:-1},
+        {x:0,y:1},
+        {x:1,y:-1},
+        {x:1,y:0},
+        {x:1,y:1}
+    ]
+    var patternType = 'easy';
+    var totalData = [];
+    var actionType = 1; // 1 翻开 2 插旗
+    window.onload=function (ev) {
+        initData();
+    }
+    function initData() { // 初始化数据
+        var dataType = pattern[patternType];
+        for(var i=0;i<dataType.row;i++){
+            totalData.push([])
+            for(var j=0;j<dataType.col;j++){
+                var currentdata = {
+                    row:i,
+                    col:j,
+                    num:0,
+                    state:'close',
+                    mine:false,
+                    flag:false
+                }
+                totalData[i].push(currentdata);
+            }
+        }
+        console.log(totalData);
+        createRandomMine(dataType.mineNum);
+        checkMineAndSetNum();
+        renderView();
+    }
+    function renderView() {
+        for(var i=0;i<totalData.length;i++){
+            $('#mineContainer').append('<div class="row"></div>');
+            for(var j=0;j<totalData[i].length;j++){
+                var div_ = document.createElement('div');
+                div_.className = 'col';
+                div_.innerText = totalData[i][j].num;
+                div_.setAttribute('data-row',totalData[i][j].row);
+                div_.setAttribute('data-col',totalData[i][j].col);
+                if(totalData[i][j].state!='close'){
+                    $(div_).addClass('open');
+                }
+                if(totalData[i][j].flag!=false){
+                    $(div_).addClass('flag');
+                }
+                if(totalData[i][j].mine){
+                    $(div_).addClass('mine');
+                    div_.innerText = '';
+                    var mask = document.createElement('div');
+                    mask.className = 'mineMask'
+                    $(div_).append(mask)
+                }
+                $('#mineContainer').children()[i].append(div_);
+            }
+        }
+    }
+    function checkMineAndSetNum() {
+        for(var i=0;i<totalData.length;i++){
+            for(var j=0;j<totalData[i].length;j++){
+                var current = totalData[i][j];
+                if(current.mine){
+                    continue
+                }
+                for(var k=0;k<checkList.length;k++){
+                    if(totalData[i+checkList[k].x]){
+                        if(totalData[i+checkList[k].x][j+checkList[k].y]){
+                            if(totalData[i+checkList[k].x][j+checkList[k].y].mine==true){
+                                totalData[i][j].num++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        console.log(totalData);
+    }
+    function createRandomMine(num) {
+        for(var i=0;i<num;i++){
+            var rownum = randomNum(0,8);
+            var colnum = randomNum(0,8);
+            if(!totalData[rownum][colnum].mine){
+                totalData[rownum][colnum].mine = true;
+                totalData[rownum][colnum].num = 9;
+            }else{
+                i--;
+            }
+        }
+    }
+    function randomNum(min,max) {
+        var num = (Math.random()*(max-min)+min).toFixed();
+        return num;
+    }
+    function turnOver(){ // 翻开
+        actionType = 1;
+        $('#turnOver').addClass('active');
+        $('#flagInsert').removeClass('active');
+    }
+    function flagInsert() { // 插旗
+        actionType = 2;
+        $('#turnOver').removeClass('active');
+        $('#flagInsert').addClass('active');
+    }
+    $('#mineContainer').delegate('.col','click',function () { // 点击每一个雷的方法
+        var num = this.innerText;
+        var row_ = this.getAttribute('data-row');
+        var col_ = this.getAttribute('data-col');
+        console.log(num,row_,col_);
+        if(actionType == 1){ // 翻开
+
+        }else{ // 插旗
+
+        }
+    })
+</script>
+</html>
