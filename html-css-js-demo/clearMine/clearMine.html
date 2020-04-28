@@ -10,7 +10,7 @@
     <style>
         #mineContainer{
             width: 100%;
-            height: 20rem;
+            /*height: 20rem;*/
             background: bisque;
             flex-direction: column;
             display: flex;
@@ -68,15 +68,44 @@
             background: cadetblue;
             color: white;
         }
+        #Mask{
+            position: fixed;
+            top: 0;left: 0;right: 0;bottom: 0;
+            background: url("./img/bg.jpg");
+            background-size: cover;
+        }
+        #Maskbtncontainer{
+            position: absolute;
+            top: 20%;left: 20%;
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+        }
+        #Maskbtncontainer div{
+            height: 3rem;
+            line-height: 3rem;
+            text-align: center;
+            background: cadetblue;
+            color: white;
+            border-radius: .5rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
     <div id="mineContainer">
     </div>
     <div id="btnContainer">
-        <div class="btn" id="turnOver" onclick="turnOver()">翻开</div>
+        <div class="btn active" id="turnOver" onclick="turnOver()">翻开</div>
         <div></div>
         <div class="btn" id="flagInsert" onclick="flagInsert()">插旗</div>
+    </div>
+    <div id="Mask">
+        <div id="Maskbtncontainer">
+            <div onclick="choosepattern('easy')">简单</div>
+            <div onclick="choosepattern('normal')">平常</div>
+            <div onclick="choosepattern('difficulty')">困难</div>
+        </div>
     </div>
 </body>
 <script>
@@ -116,7 +145,17 @@
     window.onload=function (ev) {
         initData();
     }
+    function choosepattern(type) {
+        patternType = type;
+        closeMask();
+        clearView();
+        initData();
+    }
+    function closeMask() {
+        $('#Mask').css('display','none');
+    }
     function initData() { // 初始化数据
+        totalData = [];
         var dataType = pattern[patternType];
         for(var i=0;i<dataType.row;i++){
             totalData.push([])
@@ -153,12 +192,14 @@
                 if(totalData[i][j].flag!=false){
                     $(div_).addClass('flag');
                 }
-                if(totalData[i][j].mine){
+                if(totalData[i][j].mine){ // 地雷
                     $(div_).addClass('mine');
                     div_.innerText = '';
-                    var mask = document.createElement('div');
-                    mask.className = 'mineMask'
-                    $(div_).append(mask)
+                    if(totalData[i][j].state!='open'&&!totalData[i][j].flag){  // 地雷只在当前没有open状态的时候 添加一个遮罩
+                        var mask = document.createElement('div');
+                        mask.className = 'mineMask'
+                        $(div_).append(mask)
+                    }
                 }
                 $('#mineContainer').children()[i].append(div_);
             }
@@ -213,14 +254,66 @@
         $('#turnOver').removeClass('active');
         $('#flagInsert').addClass('active');
     }
+    function openMineAll() {
+        for(var i=0;i<totalData.length;i++){
+            for(var j=0;j<totalData[i].length;j++){
+                if(totalData[i][j].mine){
+                    totalData[i][j].state = 'open';
+                }
+            }
+        }
+    }
+    function findAllZeroAndOpen(row_,col_){ // 从当前row col坐标出发 遍历周围8个方向 是0的都打开  不是0不管
+        row_ = Number(row_);
+        col_ = Number(col_);
+        totalData[row_][col_].state = 'open';
+        for(var i=0;i<checkList.length;i++){
+            var x = row_+checkList[i].x;
+            var y = col_+checkList[i].y;
+            // if(totalData[x]&&totalData[x][y]){
+            //     console.log(totalData[x][y])
+            // }
+            if(totalData[x]&&totalData[x][y]&&totalData[x][y].num==0&&totalData[x][y].state!='open'){ // 是0的就打开 并且调用方法自身
+                totalData[x][y].state = 'open';
+                findAllZeroAndOpen(x,y);
+            }
+        }
+    }
+    function allreadyWin() {
+        var Win = true;
+        for(var i=0;i<totalData.length;i++){
+            for(var j=0;j<totalData[i].length;j++){
+                if(!totalData[i][j].mine&&totalData[i][j].state!='open'){ //  不是地雷 且有一个没打开都不算赢
+                    Win = false
+                }
+            }
+        }
+        return Win
+    }
     $('#mineContainer').delegate('.col','click',function () { // 点击每一个雷的方法
         var num = this.innerText;
-        var Children = $(this).children('.mask');
+        var Children = $(this).has('.mask');
+        var child = $(this).children('div.mask');
+        console.log(Children);
+        console.log(child);
         var row_ = this.getAttribute('data-row');
         var col_ = this.getAttribute('data-col');
         console.log(num,row_,col_);
         if(actionType == 1){ // 翻开
             totalData[row_][col_].state = 'open';
+            if(!num){ // 地雷  所有地雷都翻开
+                openMineAll();
+                alert('you lose!hahahahaha');
+            }else{
+                var isWin = allreadyWin();
+                if(isWin){
+                    alert('you win!')
+                }
+                if(num=='0'){ // 空格 需要遍历周围空格
+                    findAllZeroAndOpen(row_,col_);
+                }else{ //  数字 仅展示就好了
+                }
+            }
         }else{ // 插旗
             totalData[row_][col_].flag = !totalData[row_][col_].flag;
         }
