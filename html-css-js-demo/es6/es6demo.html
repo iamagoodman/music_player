@@ -43,6 +43,89 @@
     for(let key in o){
         console.log(key,o[key])
     }
-    addnum(1,2);
+    console.log(Number.parseInt(5.25))
+    console.log(Number.parseFloat('5.25fdsljfds'))
+    console.log(2**3)
+    let r = new Set(['a','b'])
+    console.log(r);
+    let s = new Map();
+    s.set('1','a');
+    s.set('2','b');
+    console.log(s);
+    console.log(Array.from(r));
+    console.log(Array.from(s));
+    console.log(Array.from('helloworld'));
+    console.log([1,2,3,-4,5,6].find(n=>{return n<0}));
+    console.log([1,2,3,4].includes(3));
+    function point(x='5',y='6'){
+        this.x = x;
+        this.y = y;
+    }
+    console.log(new point());
+    function restfn(a,...list){
+        // list.forEach(item=>{
+        //     a.push(item);
+        // })
+        a.push(...list)
+        return a
+    }
+    console.log(restfn([],1,3,5,6,'ew',6,'ewr'))
+    console.log(restfn.name)
+    var q = 'asd';
+    var t = {q};
+    console.log(t);
+    let u = Symbol();
+    console.log(u);
+    console.log(typeof u)
+    let v = new Set();
+    [1,2,3,4,5,3,2,4,5,2].map(a=>v.add(a));
+    for(let i of v){
+        console.log(i)
+    }
+    console.log(v)
+    let x = [1,2,5,4,54,4,3,4,2,1,2,4,5,7,8,0,9];
+    let quchong = (arr)=>{
+        return Array.from(new Set(arr))
+    }
+    console.log(quchong(x));
+    class Animal {
+        constructor(name, color) {
+
+            this.name = name;
+            this.color = color;
+
+        }
+
+        toString() {
+            console.log('name:'+ this.name + ',color:' + this.color);
+
+        }
+    }
+
+    var animal = new Animal('dog', 'white');
+    animal.toString();
+    console.log(animal.hasOwnProperty('name'));
+    console.log(animal.hasOwnProperty('toString'));
+    console.log(animal.__proto__.hasOwnProperty('toString'));
+
+    class Cat extends Animal {
+        constructor(action) {
+            // 如果没有置顶consructor,默认带super函数的constructor将会被添加、
+            super('cat', 'white');
+            this.action = action;
+        }
+
+        toString() {
+            console.log(super.toString());
+        }
+
+    }
+
+    var cat = new Cat('catch');
+    cat.toString();
+    console.log(cat instanceof Cat);
+    console.log(cat instanceof Animal);
+
+
 </script>
 </html>
