@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'MYFont';
+    src: url("./Songti.ttc");
+    font-weight: 800;
+}
+.hello{
+    font-family: MYFont;
+    color: blue;
+}
